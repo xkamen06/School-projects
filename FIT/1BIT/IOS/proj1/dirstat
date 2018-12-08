@@ -1,0 +1,337 @@
+#!/bin/sh
+
+#Autor: Zdenek Kamensky, 1.rocnik FIT VUT Brno
+#Predmet: IOS - Operacni systemy
+#Datum: 12.3.2016
+#1.projekt 
+#####SKRIPT, KTERY PROCHAZI ADRESAR A VYTVARI REPORT O JEHO OBSAHU#####
+
+#Funkce, ktera vraci pocet vsech adresaru(i dale zanorenych) v danem adresari
+find_dir() {
+	dir_n=$(find . -type d | wc -l)
+	echo $dir_n
+}
+
+#Funkce, ktera vraci pocet vsech souboru(i dale zanorenych) v danem adresari
+find_file() {
+	if [ "$1" = "1" ]; then
+		#Pokud pri volani funkce je 1. argument = 1, pak se hledaji pouze soubory s urcitou priponou (.c, .rb, ...)
+		file_n=$(find . -type f \( -name "*.$2" \) | wc -l)
+		echo $file_n
+	elif [ "$1" = "2" ]; then
+		#Pokud pri volani funkce je 1. argument = 2, pak se vynechaji vsechny soubory jejichz jmeno odpovida danemu retezci
+		file_n=$(find . -type f ! -name "*$2*" | wc -l)
+		echo $file_n
+	elif [ "$1" = "3" ]; then
+		#Pokud pri volani funkce je 1. argument = 3, pak se hledaji pouze soubory s urcitou priponu a zaroven neobsahuji
+		#nazev, ktery ma byt ignorovan
+		file_n=$(find . -type f ! -name "*$3*" -name "*.$2" | wc -l)
+		echo $file_n
+	else
+	    	#Jinak pocita vsechny soubory
+		file_n=$(find . -type f | wc -l)
+		echo $file_n
+	fi
+}
+
+#Funkce, ktera vraci maximalni stupen zanoreni adresare zadaneho argumentem
+depth_dir() {
+  	cd "$1"
+ 	max_depth=0
+  	for d in */.; do
+    		[ -d "$d" ] || continue
+    		current_depth=`depth_dir "$d"`
+    		max_depth=$(($current_depth > $max_depth ? $current_depth : $max_depth))
+  	done
+	echo $(($max_depth + 1))
+}
+
+#Funkce, ktera vraci velikost nejvetsiho souboru - nejprve se nalezna cesta k nejv. souboru a potom jeho velikost
+max_file() {
+	#POkud pri volani funkce je 1. argument = 1, pak se prochazi pouze soubory s danou priponou
+	if [ "$1" = "1" ]; then
+		max_f_path=$(find . -type f  -name "*.$2" | xargs ls -1S 2>/dev/null | head -n 1)
+		max_f=$(ls -l $max_f_path | awk '{ print $5 }' )	
+		echo $max_f
+	elif [ "$1" = "2" ]; then
+		max_f_path=$(find . -type f ! -name "*$2*" | xargs ls -1S 2>/dev/null | head -n 1)
+		max_f=$(ls -l $max_f_path | awk '{ print $5}' )	
+		echo $max_f	
+	elif [ "$1" = "3" ]; then	
+		max_f_path=$(find . -type f ! -name "*$3*" -name "*.$2" | xargs ls -1S 2>/dev/null | head -n 1)
+		max_f=$(ls -l $max_f_path | awk '{ print $5}' )
+		echo $max_f	
+	else
+		max_f_path=$(find . -type f | xargs ls -1S 2>/dev/null | head -n 1)
+ 		max_f=$(ls -l $max_f_path | awk '{ print $5}' )
+		echo $max_f
+	fi
+}
+
+#Funkce, ktera vraci prumernou velikost souboru
+size_dir() {
+	if [ "$1" = "1" ]; then
+		size=$(find . -type f -name "*.$2" -ls | awk '{sum += $7} END {print sum}')
+		average_size=$(($size/$3))
+	elif [ "$1" = "2" ]; then
+		size=$(find . -type f -name "*$2*" -ls | awk '{sum += $7} END {print sum}')
+		average_size=$(($size/$3))
+	elif [ "$1" = "3" ]; then
+		size=$(find . -type f ! -name "*$3*" -name "*.$2" -ls | awk '{sum += $7} END {print sum}')
+		average_size=$(($size/$4))
+	elif [ "$1" = "0" ]; then
+		size=$(find . -type f -ls | awk '{sum += $7} END {print sum}')
+		average_size=$(($size/$2))
+	fi
+	echo $average_size	
+}
+
+
+
+#OBECNA SEKCE (berou se vsechny soubory, krome ignorovanych - ne podle pripon):
+#
+#
+###################################################################################################
+#Prace s argumenty: 
+##Vstup do pozadovane slozky zadane v argumentu a zjisteni zda a jake soubory maji byt ignorovany##
+#
+#1. pokud je pouze jeden arg. je bran jako cilovy adresar a prejde se  do nej
+#2. pokud jsou dva arg. je testovano zda prvni z nich je -i, pokud ano, 
+#   druhy je nazev souboru, ktere maji byt ignorovany
+#3. pokud jsou arg. 3 a prvni z nich je -i pak druhy je jmeno souboru,
+#   ktere maji byt ignorovany a treti je cilovy pozadovany adresar a prejde se do nej
+#4. pokud neni zadan argument, nic se nestane a pracuje se s aktualnim adresarem
+#5. pokud ani jedno neplati, je vypsana chyba a program je ukoncen	
+
+#1.
+if [ "$#" = "1" ]; then
+	cd $1
+	ignore_f=0
+
+#2.
+elif [ "$#" = "2" ]; then
+	if [ "$1" = "-i" ]; then 
+		ignore_f=$2
+	#Pokud 1. argument neni -i, ale presto jsou zadany 2 argumenty je vypsana chyba
+	else 
+		echo "Error:Ivalid arguments!"
+		exit 
+	fi
+
+#3.
+elif [ "$#" = "3" ]; then
+	if [ "$1" = "-i" ];then
+		ignore_f=$2
+		cd $3
+	#Pokud 1. argument neni -i, ale presto jsou zadany 3 argumenty je vypsana chyba
+	else
+		echo "Error:Ivalid arguments!"
+		exit 
+	fi
+
+#4.
+elif [ "$#" = "0" ]; then
+	ignore_f=0
+
+#5.
+else
+	echo "Error:Ivalid arguments!"
+	exit 
+fi
+
+###################################################################################################
+				    #Konec prace s argumenty#
+
+#Nazev korenoveho adresare
+echo "Root directory: ${PWD##*/}"
+
+#Pocet vsech adresaru
+num_dir=$(find_dir)
+echo "Directories: $num_dir"
+
+#Maximalni uroven zanoreni
+num_depth=$(depth_dir)
+echo "Max depth: $num_depth"
+
+#Pocet vsech souboru
+if [ $ignore_f = "0" ];then
+	num_file=$(find_file)
+else
+	num_file=$(find_file "2" "$ignore_f")
+fi
+
+#Prumerny pocet souboru v jednom adresari
+avg_file=$(($num_file/$num_dir))
+echo "Average no. of files: $avg_file"
+
+echo "All files: $num_file"
+
+#Pokud je pocet souboru roven 0, vypise se u techto polozek N/A
+if [ $num_file = "0" ]; then
+	echo "  Largest file: N/A"
+	echo "  Average file size: N/A"
+	echo "  File size median: N/A"
+	echo "File extensions:" 
+else 
+	#Velikost nejvetsiho souboru
+	if [ $ignore_f = "0" ]; then
+		file_mx=$(max_file)
+		if [ "$file_mx" = "0" ]; then
+			echo "  Largest file: N/A"
+		else
+			echo "  Largest file: $file_mx"
+		fi	
+	else 
+		file_mx=$(max_file "2" "$ignore_f")	
+		if [ "$file_mx" = "0" ]; then
+			echo "  Largest file: N/A"
+		else
+			echo "  Largest file: $file_mx"
+		fi
+	fi
+	
+	#Prumerna velikost souboru
+	if [ $ignore_f = "0" ]; then
+		average_f_size=$(size_dir "0" "$num_file")
+	else
+		average_f_size=$(size_dir "2" "$ignore" "$num_file")
+	fi
+	echo "  Average file size: $average_f_size"
+	
+	#Median
+	mod=$(($num_file%2))
+	if [ $mod = "0" ]; then
+		med_num1=$(($num_file/2)) 
+		med_num2=$(($med_num1+1))
+		if [ $ignore_f = "0" ]; then
+			files_med1=$(find . -type f | xargs ls -1S 2>/dev/null | head -$med_num1 | tail -1 )
+			files_med1=$(ls -l $files_med1 | awk '{ print $5}' )
+			files_med2=$(find . -type f | xargs ls -1S 2>/dev/null | head -$med_num2 | tail -1 )
+			files_med2=$(ls -l $files_med2 | awk '{ print $5}' )
+			files_med1=$(($files_med1+$files_med2))
+			files_med1=$(($files_med1/2))
+			echo "  File size median: $files_med1"
+		else
+			files_med1=$(find . -type f ! -name "*$ignore_f*" | xargs ls -1S 2>/dev/null | head -$med_num1 | tail -1 )
+			files_med1=$(ls -l $files_med1 | awk '{ print $5}' )
+			files_med2=$(find . -type f ! -name "*$ignore_f*" | xargs ls -1S 2>/dev/null | head -$med_num2 | tail -1 )
+			files_med2=$(ls -l $files_med2 | awk '{ print $5}' ) 
+			files_med1=$(($files_med1+$files_med2))
+			files_med1=$(($files_med1/2))
+			echo "  File size median: $files_med1"
+		fi
+	else 
+		med_num=$(($num_file/2))	
+		med_num=$(($med_num+1))
+		if [ $ignore_f = "0" ]; then
+			files_med=$(find . -type f | xargs ls -1S 2>/dev/null | head -$med_num | tail -1 )
+			files_med=$(ls -l $files_med | awk '{ print $5}' )
+			echo "  File size median: $files_med"
+		else
+			files_med=$(find . -type f ! -name "*$ignore_f*" | xargs ls -1S 2>/dev/null | head -$med_num | tail -1 )
+			files_med=$(ls -l $files_med | awk '{ print $5}' )
+			echo "  File size median: $files_med"
+		fi
+
+	fi
+
+fi
+
+
+
+#SEKCE EXTENSIONS:
+#
+#
+#
+#
+#Sekce extensions probehne pouze tehdy, kdyz pocet souboru neni roven 0
+
+if [ $num_file != "0" ]; then
+
+	if [ $ignore_f = "0" ]; then 
+		num_ext=$(find . -type f -name '*.*' | sed 's|.*\.||' | sort -u | wc -l)
+		echo "File extensions: $(find . -type f -name '*.*' | sed 's|.*\.||' | sort -u | tr '\n' ',' | sed 's/,$//g' )"
+	else 
+		num_ext=$(find . -type f -name '*.*' ! -name "*$ignore_f" | sed 's|.*\.||' | sort -u | wc -l)
+		echo "File extensions: $(find . -type f -name '*.*' ! -name "*$ignore_f*" | sed 's|.*\.||' | sort -u | tr '\n' ',' | sed 's/,$//g' )"
+	fi
+	i=0
+	#Dale jsou pripony prochazeny a vypsany s nimi souvisejici urcite hodnoty
+	for a in $(seq 1 $num_ext)
+	do
+		
+		i=$((i+1))
+		if [ $ignore_f = "0" ] ; then  
+			act_ext=$(find . -type f -name '*.*' | sed 's|.*\.||' | sort -u | head -$i | tail -1)
+		else
+			act_ext=$(find . -type f -name '*.*' ! -name "*$ignore_f*" | sed 's|.*\.||' | sort -u | head -$i | tail -1)
+		fi
+
+		if [ $ignore_f = "0" ]; then 
+			#Pocet souboru s touto priponou
+			num_file=$(find_file "1" "$act_ext")
+			echo "Files .$act_ext: $num_file"
+		else
+			num_file=$(find_file "3" "$act_ext" "$ignore_f") 
+			echo "Files .$act_ext: $num_file"
+		fi
+    	
+		#Nejvetsi soubor s touto priponou
+		if [ $ignore_f = "0" ]; then
+			file_mx=$(max_file "1" "$act_ext")
+		else
+			file_mx=$(max_file "3" "$act_ext" "$ignore_f")
+		fi
+		echo "  Largest file .$act_ext: $file_mx"
+
+		#Prumerna velikost souboru
+		if [ $ignore_f = "0" ]; then
+			average_f_size=$(size_dir "1" "$act_ext" "$num_file")
+		else 
+			average_f_size=$(size_dir "3" "$act_ext" "$ignore_f" "$num_file")
+		fi
+		echo "  Average file size .$act_ext: $average_f_size"
+		
+			
+		#Median
+		mod=$(($num_file%2))
+		if [ $mod = "0" ]; then
+			med_num1=$(($num_file/2)) 
+			med_num2=$(($med_num1+1))
+			if [ $ignore_f = "0" ]; then
+				files_med1=$(find . -type f -name "*.$act_ext" | xargs ls -1S 2>/dev/null | head -$med_num1 | tail -1 )
+				files_med1=$(ls -l $files_med1 | awk '{ print $5}' ) 
+				files_med2=$(find . -type f -name "*.$act_ext" | xargs ls -1S 2>/dev/null | head -$med_num2 | tail -1 )
+				files_med2=$(ls -l $files_med2 | awk '{ print $5}' ) 
+
+				files_med1=$(($files_med1+$files_med2))
+				files_med1=$(($files_med1/2))
+				echo "  File size median .$act_ext: $files_med1"
+			else
+				files_med1=$(find . -type f -name "*.$act_ext" ! -name "*$ignore_f*" | xargs ls -1S 2>/dev/null | head -$med_num1 | tail -1 )
+				files_med1=$(ls -l $files_med1 | awk '{ print $5}' )
+				files_med2=$(find . -type f -name "*.$act_ext" ! -name "*$ignore_f*" | xargs ls -1S 2>/dev/null | head -$med_num2 | tail -1 )
+				files_med2=$(ls -l $files_med2 | awk '{ print $5}' )
+
+				files_med1=$(($files_med1+$files_med2))
+				files_med1=$(($files_med1/2))
+				echo "  File size median .$act_ext: $files_med1"
+			fi
+		else 
+			med_num=$(($num_file/2))	
+			med_num=$(($med_num+1))
+			if [ $ignore_f = "0" ]; then
+				files_med=$(find . -type f -name "*.$act_ext" | xargs ls -1S 2>/dev/null | head -$med_num | tail -1 )
+				files_med=$(ls -l $files_med | awk '{ print $5}' ) 
+				echo "  File size median .$act_ext: $files_med"
+			else
+				files_med=$(find . -type f -name "*.$act_ext" ! -name "*$ignore_f*" | xargs ls -1S 2>/dev/null | head -$med_num | tail -1 )
+				files_med=$(ls -l $files_med | awk '{ print $5}' )
+				echo "  File size median .$act_ext: $files_med"
+			fi
+
+		fi
+
+	done
+
+fi

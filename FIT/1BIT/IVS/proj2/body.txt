@@ -1,0 +1,3 @@
+xkarpi05 5 (GUI - grafické uživatelské rozhraní, mockupy, debugging)
+xkamen06 5 (matematická knihovna, testy matematické knihovny, doxyfile a dokumentace, uživatelská pøíruèka)
+xdosed07 5 (správa rezpozitáøe na github.com, instalátor programu, makefile)

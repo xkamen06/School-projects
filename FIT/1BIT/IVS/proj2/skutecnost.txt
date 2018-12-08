@@ -1,0 +1,84 @@
+#IVS - Praktické aspekty vývoje software
+#2. projekt
+#Tým - Voøežpruti
+#Èlenové - Karpíšek Miroslav (vedoucí)
+	- Kamenský Zdenìk
+	- Dosedìl Petr
+
+#############################################################################################################################################
+
+
+
+ROZDÍLY MEZI PLÁNEM A SKUTEÈNOSTÍ:
+_____________________________________________________________________________________________________________________________________________
+Komunikaèní kanál www.facebook.com dodržen - veškerá vzdálená komunikace probìla pøes tento kanál
+
+Všechna pravidla komunikace byla bez problémù dodržena
+	- v komunikaci mezi èleny týmu nevznikaly žádné problémy 
+	- v úterý a ve ètvrtek od 20:00 byli všichni èlenové dostupní na sociální síti, která byla vybrána jako komu. kanál
+	- nikdo z èlenù týmu nebyl neaktivní více než 24 hodin 
+	- mimo vzdálenou komunikaci probíhali také schùzky 2x do týdne po pøedchozí domluvì
+ 
+Skuteènì vykonané úkoly: 
+- plánované èinnosti jsou oznaèeny "-"
+- skuteènì vykonané èínnosti jsou oznaèeny "+" 
+
+xdosed07:
+_____________________________________
+- programová dokumentace
+(vèetnì mat. knihovny)
+       
+- nápovìda, uživatelská dokumentace
+(návod na instalaci a odinstalaci, struènì a výstižnì)
+
+    
+
++ správa GITu na webu github.com
++ tvorba makefile
++ tvorba instalátoru (odinstalátoru)
+
+
+xkamen06:
+_____________________________________
+- testy pro matematickou knihovnu 
+(testy na základní mat. operace, faktoriál, umocòování, pøirozené exponenty)
+
+- tvorba matematické knihovny
+        
+- tvorba instalátoru (odinstalátoru)
+
++
+ tvorba matematické knihovny
++ testy pro matematickou knihovnu
+
+ 
+(testy na základní mat. operace, faktoriál, umocòování, pøirozené exponenty)
++ uživatelská pøíruèka
++ doxyfile -> programová dokumentace
+
+
+xkarpi05:
+_____________________________________
+- vytvoøení GUI 
+(dle domluveného designu)
+        
+- makefile (pack, clean, test, doc)
+       
+
++ vytvoøení GUI (dle domluveného designu)
++ tvorba mockupù
++ koordinace a organizace týmové práce
+
+
+
+
+
+
+Spoleèné úkoly:
+
+        
+
+- spoleèné úkoly byly ve skuteènosti rozdìleny mezi èleny týmu
+
+
+========== Všichni èlenové týmu spolu sdíleli veškeré poznatky a rady. ==========
